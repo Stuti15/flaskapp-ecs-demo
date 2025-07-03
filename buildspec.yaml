@@ -26,40 +26,11 @@ phases:
       - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG
       - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:latest
       - echo Writing taskdef.json...
-      - |
-        printf '[{
-          "name": "flaskapp-ecs-demo",
-          "imageUri": "160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:%s"
-        }]' $IMAGE_TAG > imagedefinitions.json
-      - |
-        printf '{
-          "family": "flaskapp-ecs-demo",
-          "networkMode": "bridge",
-          "containerDefinitions": [
-            {
-              "name": "flaskapp-ecs-demo",
-              "image": "160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:%s",
-              "essential": true,
-              "memory": 512,
-              "cpu": 256,
-              "portMappings": [
-                {
-                  "containerPort": 80,
-                  "hostPort": 80,
-                  "protocol": "tcp"
-                }
-              ]
-            }
-          ],
-          "requiresCompatibilities": ["EC2"],
-          "executionRoleArn": "arn:aws:iam::160596073886:role/ecsTaskExecutionRole"
-        }' $IMAGE_TAG > taskdef.json
-      - echo taskdef.json created:
+      - printf '{"family":"flaskapp-ecs-demo","networkMode":"bridge","containerDefinitions":[{"name":"flaskapp-ecs-demo","image":"160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:%s","essential":true,"memory":512,"cpu":256,"portMappings":[{"containerPort":80,"hostPort":80,"protocol":"tcp"}]}],"requiresCompatibilities":["EC2"],"executionRoleArn":"arn:aws:iam::160596073886:role/ecsTaskExecutionRole"}' $IMAGE_TAG > taskdef.json
       - cat taskdef.json
 
 artifacts:
   files:
     - appspec.yml
     - taskdef.json
-    - imagedefinitions.json
     - scripts/**/*
