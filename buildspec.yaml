@@ -1,0 +1,64 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
+      - echo "IMAGE_TAG=$IMAGE_TAG"
+      - echo $IMAGE_TAG > image_tag.txt
+
+  build:
+    commands:
+      - IMAGE_TAG=$(cat image_tag.txt)
+      - echo Build started on `date`
+      - docker build -t flask-ecs-app:$IMAGE_TAG .
+      - docker tag flask-ecs-app:$IMAGE_TAG 160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:$IMAGE_TAG
+      - docker tag flask-ecs-app:$IMAGE_TAG 160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:latest
+
+  post_build:
+    commands:
+      - IMAGE_TAG=$(cat image_tag.txt)
+      - echo Build completed on `date`
+      - echo Pushing Docker images...
+      - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:$IMAGE_TAG
+      - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:latest
+
+      # Generate taskdef.json with correct image tag
+      - echo Writing taskdef.json...
+      - |
+        cat > taskdef.json <<EOF
+        {
+          "family": "flask-ecs-app",
+          "networkMode": "bridge",
+          "containerDefinitions": [
+            {
+              "name": "flask-ecs-app",
+              "image": "160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:$IMAGE_TAG",
+              "essential": true,
+              "memory": 512,
+              "cpu": 256,
+              "portMappings": [
+                {
+                  "containerPort": 80,
+                  "hostPort": 80,
+                  "protocol": "tcp"
+                }
+              ]
+            }
+          ],
+          "requiresCompatibilities": ["EC2"],
+          "executionRoleArn": "arn:aws:iam::160596073886:role/ecsTaskExecutionRole"
+        }
+        EOF
+
+      - echo taskdef.json created:
+      - cat taskdef.json
+
+artifacts:
+  files:
+    - appspec.yml
+    - taskdef.json
+    - scripts/**/*
