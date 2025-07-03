@@ -26,31 +26,26 @@ phases:
       - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG
       - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:latest
       - echo Writing taskdef.json...
-      - |
-        cat > taskdef.json <<EOF
-        {
-          "family": "flaskapp-ecs-demo",
-          "networkMode": "bridge",
-          "containerDefinitions": [
-            {
-              "name": "flaskapp-ecs-demo",
-              "image": "160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG",
-              "essential": true,
-              "memory": 512,
-              "cpu": 256,
-              "portMappings": [
-                {
-                  "containerPort": 80,
-                  "hostPort": 80,
-                  "protocol": "tcp"
-                }
-              ]
-            }
-          ],
-          "requiresCompatibilities": ["EC2"],
-          "executionRoleArn": "arn:aws:iam::160596073886:role/ecsTaskExecutionRole"
-        }
-        EOF
+      - echo "{" > taskdef.json
+      - echo "  \"family\": \"flaskapp-ecs-demo\"," >> taskdef.json
+      - echo "  \"networkMode\": \"bridge\"," >> taskdef.json
+      - echo "  \"containerDefinitions\": [" >> taskdef.json
+      - echo "    {" >> taskdef.json
+      - echo "      \"name\": \"flaskapp-ecs-demo\"," >> taskdef.json
+      - echo "      \"image\": \"160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG\"," >> taskdef.json
+      - echo "      \"essential\": true," >> taskdef.json
+      - echo "      \"memory\": 512," >> taskdef.json
+      - echo "      \"cpu\": 256," >> taskdef.json
+      - echo "      \"portMappings\": [{" >> taskdef.json
+      - echo "        \"containerPort\": 80," >> taskdef.json
+      - echo "        \"hostPort\": 80," >> taskdef.json
+      - echo "        \"protocol\": \"tcp\"" >> taskdef.json
+      - echo "      }]" >> taskdef.json
+      - echo "    }" >> taskdef.json
+      - echo "  ]," >> taskdef.json
+      - echo "  \"requiresCompatibilities\": [\"EC2\"]," >> taskdef.json
+      - echo "  \"executionRoleArn\": \"arn:aws:iam::160596073886:role/ecsTaskExecutionRole\"" >> taskdef.json
+      - echo "}" >> taskdef.json
       - echo taskdef.json created:
       - cat taskdef.json
 
