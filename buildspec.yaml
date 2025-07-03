@@ -14,29 +14,29 @@ phases:
     commands:
       - IMAGE_TAG=$(cat image_tag.txt)
       - echo Build started on `date`
-      - docker build -t flask-ecs-app:$IMAGE_TAG .
-      - docker tag flask-ecs-app:$IMAGE_TAG 160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:$IMAGE_TAG
-      - docker tag flask-ecs-app:$IMAGE_TAG 160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:latest
+      - docker build -t flaskapp-ecs-demo:$IMAGE_TAG .
+      - docker tag flaskapp-ecs-demo:$IMAGE_TAG 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG
+      - docker tag flaskapp-ecs-demo:$IMAGE_TAG 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:latest
 
   post_build:
     commands:
       - IMAGE_TAG=$(cat image_tag.txt)
       - echo Build completed on `date`
       - echo Pushing Docker images...
-      - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:$IMAGE_TAG
-      - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:latest
+      - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG
+      - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:latest
 
       # Generate taskdef.json with correct image tag
       - echo Writing taskdef.json...
       - |
         cat > taskdef.json <<EOF
         {
-          "family": "flask-ecs-app",
+          "family": "flaskapp-ecs-demo",
           "networkMode": "bridge",
           "containerDefinitions": [
             {
-              "name": "flask-ecs-app",
-              "image": "160596073886.dkr.ecr.us-east-1.amazonaws.com/flask-ecs-app:$IMAGE_TAG",
+              "name": "flaskapp-ecs-demo",
+              "image": "160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG",
               "essential": true,
               "memory": 512,
               "cpu": 256,
