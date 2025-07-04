@@ -7,20 +7,23 @@ phases:
       - aws --version
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
       - echo "✅ Docker login successful"
-      - echo IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8) > image_tag.txt
+      - echo IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-8) > image_tag.txt
       - source image_tag.txt
+      - echo "🆔 Using image tag: $IMAGE_TAG"
 
   build:
     commands:
-      - echo "🔧 Build phase started on `date`"
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-8)
+      - echo "🔧 Build phase started on $(date)"
+      - source image_tag.txt
       - docker build -t 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG .
 
   post_build:
     commands:
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-8)
+      - source image_tag.txt
       - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG
       - echo "[{\"name\":\"flaskapp-ecs-demo-cluster\",\"imageUri\":\"160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG\"}]" > imagedefinitions.json
+      - echo "✅ imagedefinitions.json created"
+      - rm image_tag.txt
 
 artifacts:
   files:
