@@ -9,25 +9,24 @@ phases:
       - docker --version
       - echo "🔐 Logging into Amazon ECR..."
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
-      - export REPOSITORY_URI=160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo
-      - export IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
-      - echo "✅ Using image tag: $IMAGE_TAG"
+      - echo "✅ Docker login successful"
+      - REPOSITORY_URI=160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
+      - echo "📛 Image tag: $IMAGE_TAG"
 
   build:
     commands:
       - echo "🔧 Build phase started on `date`"
       - echo "🛠 Building the Docker image..."
-      - docker build -t flaskapp-ecs-demo:$IMAGE_TAG .
-      - docker tag flaskapp-ecs-demo:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
-
+      - docker build -t 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG .
+      
   post_build:
     commands:
-      - echo "📦 Post-build phase started on `date`"
       - echo "📤 Pushing the Docker image to ECR..."
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG
       - echo "📝 Creating imagedefinitions.json..."
-      - printf '[{"name":"flaskapp-ecs-demo-cluster","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - echo "✅ imagedefinitions.json created."
+      - printf '[{"name":"flaskapp-ecs-demo-cluster","imageUri":"160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:%s"}]' $IMAGE_TAG > imagedefinitions.json
+      - echo "✅ Image pushed and definition file written"
 
 artifacts:
   files:
