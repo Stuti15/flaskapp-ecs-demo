@@ -3,13 +3,11 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo "🚀 Starting pre-build phase..."
-      - aws sts get-caller-identity
+      - echo Logging in to Amazon ECR...
       - aws --version
-      - docker --version
-      - echo "🔐 Logging into Amazon ECR..."
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
       - echo "✅ Docker login successful"
+      - echo IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
 
   build:
     commands:
