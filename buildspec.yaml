@@ -3,13 +3,15 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo "🚀 Starting pre-build phase..."
+      - echo "🔐 Logging into Amazon ECR..."
       - aws sts get-caller-identity
       - aws --version
       - docker --version
-      - echo "🔐 Logging into Amazon ECR..."
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
-      - echo "✅ Docker login successful"
+      - echo "💥 Attempting docker login..."
+      - |
+        aws ecr get-login-password --region us-east-1 \
+        | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com \
+        || { echo "❌ Docker login failed!"; exit 1; }
 
   build:
     commands:
