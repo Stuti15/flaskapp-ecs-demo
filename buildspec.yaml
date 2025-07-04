@@ -9,24 +9,18 @@ phases:
       - echo "✅ Docker login successful"
       - echo IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8) > image_tag.txt
       - source image_tag.txt
-      - echo "🧾 Image tag is: $IMAGE_TAG"
 
   build:
     commands:
       - echo "🔧 Build phase started on `date`"
-      - echo "🛠 Building the Docker image..."
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-8)
-      - echo "🖼 Using image tag: $IMAGE_TAG"
       - docker build -t 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG .
 
   post_build:
     commands:
-      - echo "📤 Pushing the Docker image to ECR..."
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-8)
       - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG
-      - echo "📝 Creating imagedefinitions.json..."
       - echo "[{\"name\":\"flaskapp-ecs-demo-cluster\",\"imageUri\":\"160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG\"}]" > imagedefinitions.json
-      - echo "✅ imagedefinitions.json created."
 
 artifacts:
   files:
