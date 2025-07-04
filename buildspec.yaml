@@ -3,30 +3,30 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo "🚀 Starting pre-build phase..."
+      - echo "Starting pre-build phase..."
       - aws sts get-caller-identity
       - aws --version
       - docker --version
-      - echo "🔐 Logging into Amazon ECR..."
+      - echo "Logging into Amazon ECR..."
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
       - REPOSITORY_URI=160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
-      - echo "✅ Using image tag: $IMAGE_TAG"
+      - echo "Using image tag: $IMAGE_TAG"
 
   build:
     commands:
-      - echo "🔧 Build phase started on `date`"
-      - echo "🛠 Building the Docker image..."
+      - echo "Build phase started on `date`"
+      - echo "Building the Docker image..."
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
 
   post_build:
     commands:
-      - echo "📦 Post-build phase started on `date`"
-      - echo "📤 Pushing the Docker image to ECR..."
+      - echo "Post-build phase started on `date`"
+      - echo "Pushing the Docker image to ECR..."
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo "📝 Creating imagedefinitions.json..."
+      - echo "Creating imagedefinitions.json..."
       - printf '[{"name":"flaskapp-ecs-demo","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - echo "✅ imagedefinitions.json created."
+      - echo "imagedefinitions.json created."
 
 artifacts:
   files:
