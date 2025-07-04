@@ -3,18 +3,14 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo "🚀 Starting pre-build phase..."
-      - echo "🔍 Identity:"
-      - aws sts get-caller-identity
-      - echo "🔍 AWS CLI version:"
+      - echo Logging in to Amazon ECR...
       - aws --version
-      - echo "🔍 Docker version:"
-      - docker --version 
-      - echo "🔐 Logging in to Amazon ECR..."
+      - docker --version
+      - aws sts get-caller-identity
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
       - REPOSITORY_URI=160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION)
-      - echo "✅ Logged in and tag will be: $IMAGE_TAG"
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
+      - echo "✅ Using image tag: $IMAGE_TAG"
 
   build:
     commands:
