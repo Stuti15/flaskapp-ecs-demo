@@ -3,27 +3,24 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo "🔐 Logging in to Amazon ECR..."
+      - echo "🔐 Logging into Amazon ECR..."
       - aws --version
       - docker --version
-      - export AWS_ACCOUNT_ID=160596073886
-      - export AWS_REGION=us-east-1
-      - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/flaskapp-ecs-demo
-      - export IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
-      - echo "🧾 Image tag will be: $IMAGE_TAG"
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
+      - echo "$IMAGE_TAG" > image_tag.txt
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
 
   build:
     commands:
       - echo "🔧 Build started on $(date)"
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - IMAGE_TAG=$(cat image_tag.txt)
+      - docker build -t 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG .
 
   post_build:
     commands:
-      - echo "📤 Pushing image to ECR..."
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo "📝 Writing imagedefinitions.json for ECS..."
-      - printf '[{"name":"flaskapp-ecs-demo-cluster","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - IMAGE_TAG=$(cat image_tag.txt)
+      - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG
+      - echo "[{\"name\":\"flaskapp-ecs-demo-cluster\",\"imageUri\":\"160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$IMAGE_TAG\"}]" > imagedefinitions.json
       - cat imagedefinitions.json
 
 artifacts:
