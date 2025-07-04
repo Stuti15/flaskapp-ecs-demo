@@ -13,19 +13,17 @@ phases:
         | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com \
         || { echo "❌ Docker login failed!"; exit 1; }
 
-  build:
+ build:
     commands:
       - echo "🔧 Build phase started on `date`"
       - echo "🛠 Building the Docker image..."
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
-      - echo "✅ Image built: $REPOSITORY_URI:$IMAGE_TAG"
 
   post_build:
     commands:
       - echo "📦 Post-build phase started on `date`"
       - echo "📤 Pushing the Docker image to ECR..."
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo "✅ Image pushed to: $REPOSITORY_URI:$IMAGE_TAG"
       - echo "📝 Creating imagedefinitions.json..."
       - printf '[{"name":"flaskapp-ecs-demo","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - echo "✅ imagedefinitions.json created."
