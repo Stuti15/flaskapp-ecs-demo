@@ -8,21 +8,26 @@ phases:
       - aws --version
       - docker --version
       - echo "🔐 Logging into Amazon ECR..."
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
+      - >
+        aws ecr get-login-password --region us-east-1 |
+        docker login --username AWS --password-stdin 160596073886.dkr.ecr.us-east-1.amazonaws.com
       - echo "✅ Docker login successful"
 
   build:
     commands:
       - echo "🔧 Build phase started on `date`"
       - echo "🛠 Building the Docker image..."
-      - docker build -t 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8) .
+      - >
+        docker build -t 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8) .
 
   post_build:
     commands:
       - echo "📤 Pushing the Docker image to ECR..."
-      - docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
+      - >
+        docker push 160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)
       - echo "📝 Creating imagedefinitions.json..."
-      - printf '[{"name":"flaskapp-ecs-demo-cluster","imageUri":"160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:%s"}]' $(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8) > imagedefinitions.json
+      - >
+        printf '[{"name":"flaskapp-ecs-demo-cluster","imageUri":"160596073886.dkr.ecr.us-east-1.amazonaws.com/flaskapp-ecs-demo:%s"}]' $(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8) > imagedefinitions.json
       - echo "✅ imagedefinitions.json created."
 
 artifacts:
